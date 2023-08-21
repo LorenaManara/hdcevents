@@ -16,13 +16,18 @@ use Illuminate\Support\Facades\Route;
 use App\http\Controllers\EventController;
 
 Route::get('/',  [EventController::class, 'index']);
-Route::get('/events/create',  [EventController::class, 'create']);
+Route::get('/events/create',  [EventController::class, 'create'])->middleware('auth'); //deixar so usuarios logados criar eventos
 Route::get('/events/{id}',  [EventController::class, 'show']);
 Route::post('/events',[EventController::class, 'store']);
+
 
 
 
 Route::get('/contact', function () {
     return view('contact');
 });
+
+Route::get('/dashboard', [EventController::Class, 'dashboard'])->middleware('auth');
+
+
 
