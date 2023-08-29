@@ -17,7 +17,7 @@
 * rodar as migrations com o comando: php artisan migrate
 * para olhar elas e ve se subiram certinho da o comando: php artisan migrate:status
 
-# Bixar banco via terminal
+# Baixar banco via terminal
 * comando para ver os seus bancos show databases;
 * comando para selecionar o banco que vc deseja use escola; no caso seria o do projeto
 
