@@ -1,0 +1,44 @@
+version: '3'
+services:
+  # Laravel PHP-FPM container
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MySQL_DATABASE: hdcevents
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - laravel
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/var/www/html
+    command: php artisan migrate
+    networks:
+      - laravel
+    depends_on:
+      - db
+
+
+  vite:
+    image: node:14
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    command: npm run dev # Substitua pelo seu comando de compilação Vite
+    networks:
+      - laravel
+
+  # MySQL container
+  
+
+networks:
+  laravel:
