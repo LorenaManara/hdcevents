@@ -5,40 +5,39 @@ services:
     image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MySQL_DATABASE: hdcevents
+      MYSQL_DATABASE: hdcevents
     ports:
-      - "3306:3306"
+      - "3316:3306"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - laravel
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: disgrama:lts
     ports:
       - "9000:9000"
     volumes:
       - .:/var/www/html
-    command: php artisan migrate
+    command: bash -c "php artisan migrate && php artisan serve --host=0.0.0.0 --port=9000"
     networks:
       - laravel
     depends_on:
       - db
 
-
   vite:
-    image: node:14
-    working_dir: /var/www/html
-    volumes:
-      - .:/var/www/html
-    command: npm run dev # Substitua pelo seu comando de compilação Vite
-    networks:
-      - laravel
+      image: node:14
+      ports:
+        - "5173:5173"
+      working_dir: /var/www/html
+      volumes:
+        - .:/var/www/html
+      command: yarn dev
+      networks:
+        - laravel
 
   # MySQL container
-  
+
 
 networks:
   laravel:
