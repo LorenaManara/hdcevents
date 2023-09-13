@@ -1,11 +1,17 @@
-FROM node:18.17.1
+FROM node:17-alpine 
 
-WORKDIR /usr/app
+WORKDIR /var/www
 
-COPY ./ /usr/app
+COPY package.json .
+
+RUN npm i
+
+COPY . .
 
 RUN npm install
 
-EXPOSE 3000
+RUN npm run build
 
-CMD [ "npm","run", "dev" ]
+FROM nginx
+
+COPY ./docker/nginx/laravel.conf /etc/nginx/laravel.conf

@@ -15,6 +15,11 @@ services:
             - laravel
 
     nginx:
+        build:
+            context: .
+            dockerfile: .dockerfile
+        env_file:
+            - .env
         image: nginx:alpine
         restart: unless-stopped
         ports:
