@@ -22,6 +22,7 @@
 * comando para selecionar o banco que vc deseja use escola; no caso seria o do projeto
 
 # Rodar o projeto
+* rodar php artisan key:generate
 * Rodar o 1 terminal com o comando: php artisan serve
 * No segundo terminal rodar o comando: npm run dev
 
@@ -32,7 +33,4 @@
 * Mysql
 * Visual Studio Code
 
-
-<h4 align="center"> 
-    :construction:  Projeto em construção  :construction:
-</h4>
+laradock:

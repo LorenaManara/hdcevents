@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('event_user', function (Blueprint $table) {
             $table->foreignId('event_id')->constrained();
-            $table->foreign('user_id')->references("id")->on("user");
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references("id")->on("users");
             $table->timestamps();
         });
     }

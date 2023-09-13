@@ -1,34 +1,40 @@
-# Use a imagem oficial do PHP 8.2 FPM
+# Definido imagem base do container;
+FROM php:8.1-fpm
 
-FROM php:8.2-fpm
+# Definido variável do usuário;
+ARG user=lorena
 
-# Atualize os repositórios e instale as dependências necessárias
+# Definido id do usuário;
+ARG uid=1000
+
+# Atualiza e instala os pacotes mencionados
 RUN apt-get update && apt-get install -y \
     git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
     zip \
     unzip
 
-# Instale as extensões PHP necessárias
-RUN docker-php-ext-install pdo pdo_mysql
+# Limpa o cache dos pacotes instalados reduzindo o tamanho final da imagem.
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Instale o Composer globalmente
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Instala as extensões do PHP;
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sockets
 
-# Defina o diretório de trabalho no contêiner
-WORKDIR /var/www/html
+# Copia o executável do composer da imagem oficial do composer para dentro do container. 
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copie o projeto Laravel para o diretório de trabalho no contêiner
-COPY . .
+# Adiciona um novo usuário ao container, aos grupos www-data, root e ao diretório /home/$user. (Importante adicionar o usuário ao diretório para evitar problemas de permissões ao dar manutenção dentro dos diretórios do container.)
+RUN useradd -G www-data,root -u $uid -d /home/$user $user
 
-# Instale as dependências do Laravel usando o Composer
-RUN composer install
-RUN composer global require laravel/installer
-RUN php artisan key:generate
-RUN php artisan cache:clear
-RUN php artisan config:cache
+# Cria o diretório /.composer no diretório do usuário (mkdir -p /home/$user/.composer). Também define o usuário e o grupo donos do diretório (chown -R $user:$user /home/$user);
+RUN mkdir -p /home/$user/.composer && \
+    chown -R $user:$user /home/$user
 
-# Exponha a porta 8000 (opcional - ajuste conforme necessário)
-EXPOSE 9000
+# Define o diretório de trabalho.
+WORKDIR /var/www
 
-# Comando de entrada para iniciar o servidor web Laravel usando o Laravel Artisan
-CMD ["php-fpm"]
+# Define o usuário padrão para todas as execuções no container.
+USER $user
