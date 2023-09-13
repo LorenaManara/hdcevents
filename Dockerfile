@@ -1,4 +1,5 @@
 # Use a imagem oficial do PHP 8.2 FPM
+
 FROM php:8.2-fpm
 
 # Atualize os repositórios e instale as dependências necessárias
@@ -22,9 +23,12 @@ COPY . .
 # Instale as dependências do Laravel usando o Composer
 RUN composer install
 RUN composer global require laravel/installer
+RUN php artisan key:generate
+RUN php artisan cache:clear
+RUN php artisan config:cache
 
 # Exponha a porta 8000 (opcional - ajuste conforme necessário)
 EXPOSE 9000
 
-# Comando de entrada para iniciar o servidor PHP-FPM
+# Comando de entrada para iniciar o servidor web Laravel usando o Laravel Artisan
 CMD ["php-fpm"]
