@@ -10,7 +10,7 @@ COPY . .
 
 RUN npm install
 
-RUN npm run build
+RUN sail npm run dev
 
 FROM nginx
 
