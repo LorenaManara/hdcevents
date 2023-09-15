@@ -5,7 +5,8 @@ FROM php:8.2-fpm
 RUN apt-get update && apt-get install -y \
     git \
     zip \
-    unzip
+    unzip \
+    npm
 
 # Instale as extensões PHP necessárias
 RUN docker-php-ext-install pdo pdo_mysql
@@ -24,7 +25,7 @@ RUN composer install
 RUN composer global require laravel/installer
 
 # Exponha a porta 8000 (opcional - ajuste conforme necessário)
-EXPOSE 9000
+EXPOSE 8000
 
 # Comando de entrada para iniciar o servidor PHP-FPM
 CMD ["php-fpm"]

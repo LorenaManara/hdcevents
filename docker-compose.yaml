@@ -1,43 +1,43 @@
 version: '3'
 services:
-  # Laravel PHP-FPM container
-  db:
+  web:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - teste
+
+  php:
+    image: disgrama
+    ports:
+      - "8000:8000"
+      - "5173:5173"
+    volumes:
+      - .:/var/www/html
+    working_dir: /var/www/html
+    networks:
+      - teste
+
+
+
+  mysql:
     image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: hdcevents
+      MYSQL_USER: laravel_user
+      MYSQL_PASSWORD: laravel_password
     ports:
       - "3316:3306"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - laravel
-
-  app:
-    image: disgrama:lts
-    ports:
-      - "9000:9000"
-    volumes:
-      - .:/var/www/html
-    command: bash -c "php artisan migrate && php artisan serve --host=0.0.0.0 --port=9000"
-    networks:
-      - laravel
-    depends_on:
-      - db
-
-  vite:
-      image: node:14
-      ports:
-        - "5173:5173"
-      working_dir: /var/www/html
-      volumes:
-        - .:/var/www/html
-      command: yarn dev
-      networks:
-        - laravel
-
-  # MySQL container
-
+      - teste
 
 networks:
-  laravel:
+  teste:
