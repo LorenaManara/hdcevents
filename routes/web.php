@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +34,25 @@ Route::get('/dashboard', [EventController::Class, 'dashboard'])->middleware('aut
 Route::post('/events/join/{id}', [EventController::Class, 'joinEvent'])->middleware('auth');
 
 Route::delete('/events/leave/{id}', [EventController::Class, 'leaveEvent'])->middleware('auth');
+
+Route::middleware(['web'])->group(function () {
+    // Outras rotas, se houver
+
+    // Rota para exibir o formulário de login
+    Route::get('/login', [EventController::class, 'showLoginForm'])->name('login');
+
+    // Rota para processar o login do usuário
+    Route::post('/login', [EventController::class, 'login']);
+
+    // Rota para exibir o formulário de registro
+    Route::get('/register', [EventController::class, 'showRegistrationForm'])->name('register');
+
+    // Rota para processar o registro do usuário
+    Route::post('/register', [EventController::class, 'register']);
+
+    // Outras rotas protegidas, se necessário
+});
+
 
 
 
