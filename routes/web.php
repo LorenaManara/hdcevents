@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -10,49 +8,27 @@ use App\Http\Controllers\Auth\RegisterController;
 |--------------------------------------------------------------------------
 |
 | Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
 |
 */
 
-use App\http\Controllers\EventController;
+use App\Http\Controllers\EventController;
 
-Route::get('/',  [EventController::class, 'index']);
-Route::get('/events/create',  [EventController::class, 'create'])->middleware('auth'); //deixar so usuarios logados criar eventos
-Route::get('/events/{id}',  [EventController::class, 'show']);
-Route::post('/events',[EventController::class, 'store']);
-Route::delete('/events/{id}', [EventController::Class, 'destroy'])->middleware('auth');
-Route::get('/events/edit/{id}', [EventController::Class, 'edit'])->middleware('auth');
-Route::put('events/update/{id}', [EventController::Class, 'update'])->middleware('auth');
+Route::get('/', [EventController::class, 'index']);
+Route::get('/events/create', [EventController::class, 'create'])->middleware('auth');
+Route::get('/events/{id}', [EventController::class, 'show']);
+Route::post('/events', [EventController::class, 'store']);
+Route::delete('/events/{id}', [EventController::class, 'destroy'])->middleware('auth');
+Route::get('/events/edit/{id}', [EventController::class, 'edit'])->middleware('auth');
+Route::put('/events/update/{id}', [EventController::class, 'update'])->middleware('auth');
 
 Route::get('/contact', function () {
     return view('contact');
 });
 
-Route::get('/dashboard', [EventController::Class, 'dashboard'])->middleware('auth');
+Route::get('/dashboard', [EventController::class, 'dashboard'])->middleware('auth');
 
-Route::post('/events/join/{id}', [EventController::Class, 'joinEvent'])->middleware('auth');
+Route::post('/events/join/{id}', [EventController::class, 'joinEvent'])->middleware('auth');
 
-Route::delete('/events/leave/{id}', [EventController::Class, 'leaveEvent'])->middleware('auth');
-
-Route::middleware(['web'])->group(function () {
-    // Outras rotas, se houver
-
-    // Rota para exibir o formulário de login
-    Route::get('/login', [EventController::class, 'showLoginForm'])->name('login');
-
-    // Rota para processar o login do usuário
-    Route::post('/login', [EventController::class, 'login']);
-
-    // Rota para exibir o formulário de registro
-    Route::get('/register', [EventController::class, 'showRegistrationForm'])->name('register');
-
-    // Rota para processar o registro do usuário
-    Route::post('/register', [EventController::class, 'register']);
-
-    // Outras rotas protegidas, se necessário
-});
-
-
-
-
+Route::delete('/events/leave/{id}', [EventController::class, 'leaveEvent'])->middleware('auth');

@@ -1,19 +1,26 @@
-FROM php:8.1-fpm-alpine AS php
+# Use a imagem PHP oficial do Docker como base
+FROM php:8.1-fpm
 
-RUN docker-php-ext-install pdo pdo_mysql sockets
-RUN curl -sS https://getcomposer.org/installer | php -- \
-     --install-dir=/usr/local/bin --filename=composer
+# Atualize o sistema e instale as dependências necessárias
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libzip-dev \
+    && docker-php-ext-install zip pdo pdo_mysql
 
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Configure as extensões do PHP e opções do PHP.ini, se necessário
 
-WORKDIR /app
-COPY . .
-RUN composer install
+# Defina o diretório de trabalho como o diretório raiz do Laravel
+WORKDIR /var/www/html
 
-FROM node:18-alpine AS node
+# Copie o código-fonte do seu projeto Laravel para o contêiner
+COPY . /var/www/html
 
-WORKDIR /app
-COPY package.json .
-RUN npm install
-COPY . .
-CMD [ "npm", "run", "dev" ]
+# Instale as dependências do Composer (certifique-se de que o composer seja instalado em sua máquina local)
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# Exponha a porta 8000 para que o servidor web embutido do Laravel possa ser acessado
+EXPOSE 8000
+
+
