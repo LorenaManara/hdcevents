@@ -4,11 +4,9 @@ namespace Laravel\Jetstream\Http\Controllers\Inertia;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Laravel\Jetstream\Actions\RemoveTeamMember;
 use Laravel\Jetstream\Actions\UpdateTeamMemberRole;
 use Laravel\Jetstream\Contracts\AddsTeamMembers;
-use Laravel\Jetstream\Contracts\InvitesTeamMembers;
-use Laravel\Jetstream\Contracts\RemovesTeamMembers;
-use Laravel\Jetstream\Features;
 use Laravel\Jetstream\Jetstream;
 
 class TeamMemberController extends Controller
@@ -24,21 +22,12 @@ class TeamMemberController extends Controller
     {
         $team = Jetstream::newTeamModel()->findOrFail($teamId);
 
-        if (Features::sendsTeamInvitations()) {
-            app(InvitesTeamMembers::class)->invite(
-                $request->user(),
-                $team,
-                $request->email ?: '',
-                $request->role
-            );
-        } else {
-            app(AddsTeamMembers::class)->add(
-                $request->user(),
-                $team,
-                $request->email ?: '',
-                $request->role
-            );
-        }
+        app(AddsTeamMembers::class)->add(
+            $request->user(),
+            $team,
+            $request->email ?: '',
+            $request->role
+        );
 
         return back(303);
     }
@@ -75,7 +64,7 @@ class TeamMemberController extends Controller
     {
         $team = Jetstream::newTeamModel()->findOrFail($teamId);
 
-        app(RemovesTeamMembers::class)->remove(
+        app(RemoveTeamMember::class)->remove(
             $request->user(),
             $team,
             $user = Jetstream::findUserByIdOrFail($userId)

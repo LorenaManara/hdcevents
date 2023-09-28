@@ -2,9 +2,9 @@
 
 namespace Laravel\Jetstream;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Jetstream\Features;
 
 trait HasProfilePhoto
 {
@@ -12,15 +12,14 @@ trait HasProfilePhoto
      * Update the user's profile photo.
      *
      * @param  \Illuminate\Http\UploadedFile  $photo
-     * @param  string  $storagePath
      * @return void
      */
-    public function updateProfilePhoto(UploadedFile $photo, $storagePath = 'profile-photos')
+    public function updateProfilePhoto(UploadedFile $photo)
     {
-        tap($this->profile_photo_path, function ($previous) use ($photo, $storagePath) {
+        tap($this->profile_photo_path, function ($previous) use ($photo) {
             $this->forceFill([
                 'profile_photo_path' => $photo->storePublicly(
-                    $storagePath, ['disk' => $this->profilePhotoDisk()]
+                    'profile-photos', ['disk' => $this->profilePhotoDisk()]
                 ),
             ])->save();
 
@@ -55,15 +54,13 @@ trait HasProfilePhoto
     /**
      * Get the URL to the user's profile photo.
      *
-     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     * @return string
      */
-    public function profilePhotoUrl(): Attribute
+    public function getProfilePhotoUrlAttribute()
     {
-        return Attribute::get(function () {
-            return $this->profile_photo_path
+        return $this->profile_photo_path
                     ? Storage::disk($this->profilePhotoDisk())->url($this->profile_photo_path)
                     : $this->defaultProfilePhotoUrl();
-        });
     }
 
     /**
@@ -73,11 +70,7 @@ trait HasProfilePhoto
      */
     protected function defaultProfilePhotoUrl()
     {
-        $name = trim(collect(explode(' ', $this->name))->map(function ($segment) {
-            return mb_substr($segment, 0, 1);
-        })->join(' '));
-
-        return 'https://ui-avatars.com/api/?name='.urlencode($name).'&color=7F9CF5&background=EBF4FF';
+        return 'https://ui-avatars.com/api/?name='.urlencode($this->name).'&color=7F9CF5&background=EBF4FF';
     }
 
     /**
@@ -87,6 +80,6 @@ trait HasProfilePhoto
      */
     protected function profilePhotoDisk()
     {
-        return isset($_ENV['VAPOR_ARTIFACT_NAME']) ? 's3' : config('jetstream.profile_photo_disk', 'public');
+        return isset($_ENV['VAPOR_ARTIFACT_NAME']) ? 's3' : 'public';
     }
 }

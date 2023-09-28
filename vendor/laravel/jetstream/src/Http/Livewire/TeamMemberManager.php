@@ -3,13 +3,10 @@
 namespace Laravel\Jetstream\Http\Livewire;
 
 use Illuminate\Support\Facades\Auth;
+use Laravel\Jetstream\Actions\RemoveTeamMember;
 use Laravel\Jetstream\Actions\UpdateTeamMemberRole;
 use Laravel\Jetstream\Contracts\AddsTeamMembers;
-use Laravel\Jetstream\Contracts\InvitesTeamMembers;
-use Laravel\Jetstream\Contracts\RemovesTeamMembers;
-use Laravel\Jetstream\Features;
 use Laravel\Jetstream\Jetstream;
-use Laravel\Jetstream\Role;
 use Livewire\Component;
 
 class TeamMemberManager extends Component
@@ -38,7 +35,7 @@ class TeamMemberManager extends Component
     /**
      * The current role for the user that is having their role managed.
      *
-     * @var string
+     * @var array
      */
     public $currentRole;
 
@@ -87,27 +84,19 @@ class TeamMemberManager extends Component
     /**
      * Add a new team member to a team.
      *
+     * @param  \Laravel\Jetstream\Contracts\AddsTeamMembers
      * @return void
      */
-    public function addTeamMember()
+    public function addTeamMember(AddsTeamMembers $adder)
     {
         $this->resetErrorBag();
 
-        if (Features::sendsTeamInvitations()) {
-            app(InvitesTeamMembers::class)->invite(
-                $this->user,
-                $this->team,
-                $this->addTeamMemberForm['email'],
-                $this->addTeamMemberForm['role']
-            );
-        } else {
-            app(AddsTeamMembers::class)->add(
-                $this->user,
-                $this->team,
-                $this->addTeamMemberForm['email'],
-                $this->addTeamMemberForm['role']
-            );
-        }
+        $adder->add(
+            $this->user,
+            $this->team,
+            $this->addTeamMemberForm['email'],
+            $this->addTeamMemberForm['role']
+        );
 
         $this->addTeamMemberForm = [
             'email' => '',
@@ -117,23 +106,6 @@ class TeamMemberManager extends Component
         $this->team = $this->team->fresh();
 
         $this->emit('saved');
-    }
-
-    /**
-     * Cancel a pending team member invitation.
-     *
-     * @param  int  $invitationId
-     * @return void
-     */
-    public function cancelTeamInvitation($invitationId)
-    {
-        if (! empty($invitationId)) {
-            $model = Jetstream::teamInvitationModel();
-
-            $model::whereKey($invitationId)->delete();
-        }
-
-        $this->team = $this->team->fresh();
     }
 
     /**
@@ -171,8 +143,6 @@ class TeamMemberManager extends Component
 
     /**
      * Stop managing the role of a given user.
-     *
-     * @return void
      */
     public function stopManagingRole()
     {
@@ -182,10 +152,10 @@ class TeamMemberManager extends Component
     /**
      * Remove the currently authenticated user from the team.
      *
-     * @param  \Laravel\Jetstream\Contracts\RemovesTeamMembers  $remover
+     * @param  \Laravel\Jetstream\Actions\RemoveTeamMember  $remover
      * @return void
      */
-    public function leaveTeam(RemovesTeamMembers $remover)
+    public function leaveTeam(RemoveTeamMember $remover)
     {
         $remover->remove(
             $this->user,
@@ -216,10 +186,10 @@ class TeamMemberManager extends Component
     /**
      * Remove a team member from the team.
      *
-     * @param  \Laravel\Jetstream\Contracts\RemovesTeamMembers  $remover
+     * @param  \Laravel\Jetstream\Actions\RemoveTeamMember  $remover
      * @return void
      */
-    public function removeTeamMember(RemovesTeamMembers $remover)
+    public function removeTeamMember(RemoveTeamMember $remover)
     {
         $remover->remove(
             $this->user,
@@ -251,15 +221,7 @@ class TeamMemberManager extends Component
      */
     public function getRolesProperty()
     {
-        return collect(Jetstream::$roles)->transform(function ($role) {
-            return with($role->jsonSerialize(), function ($data) {
-                return (new Role(
-                    $data['key'],
-                    $data['name'],
-                    $data['permissions']
-                ))->description($data['description']);
-            });
-        })->values()->all();
+        return array_values(Jetstream::$roles);
     }
 
     /**

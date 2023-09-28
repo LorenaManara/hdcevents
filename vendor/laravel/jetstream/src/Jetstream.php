@@ -2,14 +2,10 @@
 
 namespace Laravel\Jetstream;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
 use Laravel\Jetstream\Contracts\AddsTeamMembers;
 use Laravel\Jetstream\Contracts\CreatesTeams;
 use Laravel\Jetstream\Contracts\DeletesTeams;
 use Laravel\Jetstream\Contracts\DeletesUsers;
-use Laravel\Jetstream\Contracts\InvitesTeamMembers;
-use Laravel\Jetstream\Contracts\RemovesTeamMembers;
 use Laravel\Jetstream\Contracts\UpdatesTeamNames;
 
 class Jetstream
@@ -62,13 +58,6 @@ class Jetstream
      * @var string
      */
     public static $membershipModel = 'App\\Models\\Membership';
-
-    /**
-     * The team invitation model that should be used by Jetstream.
-     *
-     * @var string
-     */
-    public static $teamInvitationModel = 'App\\Models\\TeamInvitation';
 
     /**
      * The Inertia manager instance.
@@ -197,43 +186,9 @@ class Jetstream
     }
 
     /**
-     * Determine if a given user model utilizes the "HasTeams" trait.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model
-     * @return bool
-     */
-    public static function userHasTeamFeatures($user)
-    {
-        return (array_key_exists(HasTeams::class, class_uses_recursive($user)) ||
-                method_exists($user, 'currentTeam')) &&
-                static::hasTeamFeatures();
-    }
-
-    /**
-     * Determine if the application is using the terms confirmation feature.
-     *
-     * @return bool
-     */
-    public static function hasTermsAndPrivacyPolicyFeature()
-    {
-        return Features::hasTermsAndPrivacyPolicyFeature();
-    }
-
-    /**
-     * Determine if the application is using any account deletion features.
-     *
-     * @return bool
-     */
-    public static function hasAccountDeletionFeatures()
-    {
-        return Features::hasAccountDeletionFeatures();
-    }
-
-    /**
      * Find a user instance by the given ID.
      *
      * @param  int  $id
-     * @return mixed
      */
     public static function findUserByIdOrFail($id)
     {
@@ -322,7 +277,7 @@ class Jetstream
     }
 
     /**
-     * Get the name of the membership model used by the application.
+     * Get the name of the team model used by the application.
      *
      * @return string
      */
@@ -340,29 +295,6 @@ class Jetstream
     public static function useMembershipModel(string $model)
     {
         static::$membershipModel = $model;
-
-        return new static;
-    }
-
-    /**
-     * Get the name of the team invitation model used by the application.
-     *
-     * @return string
-     */
-    public static function teamInvitationModel()
-    {
-        return static::$teamInvitationModel;
-    }
-
-    /**
-     * Specify the team invitation model that should be used by Jetstream.
-     *
-     * @param  string  $model
-     * @return static
-     */
-    public static function useTeamInvitationModel(string $model)
-    {
-        static::$teamInvitationModel = $model;
 
         return new static;
     }
@@ -401,28 +333,6 @@ class Jetstream
     }
 
     /**
-     * Register a class / callback that should be used to add team members.
-     *
-     * @param  string  $class
-     * @return void
-     */
-    public static function inviteTeamMembersUsing(string $class)
-    {
-        return app()->singleton(InvitesTeamMembers::class, $class);
-    }
-
-    /**
-     * Register a class / callback that should be used to remove team members.
-     *
-     * @param  string  $class
-     * @return void
-     */
-    public static function removeTeamMembersUsing(string $class)
-    {
-        return app()->singleton(RemovesTeamMembers::class, $class);
-    }
-
-    /**
      * Register a class / callback that should be used to delete teams.
      *
      * @param  string  $class
@@ -456,24 +366,6 @@ class Jetstream
         }
 
         return static::$inertiaManager;
-    }
-
-    /**
-     * Find the path to a localized Markdown resource.
-     *
-     * @param  string  $name
-     * @return string|null
-     */
-    public static function localizedMarkdownPath($name)
-    {
-        $localName = preg_replace('#(\.md)$#i', '.'.app()->getLocale().'$1', $name);
-
-        return Arr::first([
-            resource_path('markdown/'.$localName),
-            resource_path('markdown/'.$name),
-        ], function ($path) {
-            return file_exists($path);
-        });
     }
 
     /**

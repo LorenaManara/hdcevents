@@ -1,23 +1,26 @@
-import './bootstrap';
-import '../css/app.css';
+require('./bootstrap');
 
-import { createApp, h } from 'vue';
-import { createInertiaApp } from '@inertiajs/vue3';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
+require('moment');
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+import Vue from 'vue';
 
-createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
-    resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
-    setup({ el, App, props, plugin }) {
-        return createApp({ render: () => h(App, props) })
-            .use(plugin)
-            .use(ZiggyVue)
-            .mount(el);
-    },
-    progress: {
-        color: '#4B5563',
-    },
-});
+import { InertiaApp } from '@inertiajs/inertia-vue';
+import { InertiaForm } from 'laravel-jetstream';
+import PortalVue from 'portal-vue';
+
+Vue.mixin({ methods: { route } });
+Vue.use(InertiaApp);
+Vue.use(InertiaForm);
+Vue.use(PortalVue);
+
+const app = document.getElementById('app');
+
+new Vue({
+    render: (h) =>
+        h(InertiaApp, {
+            props: {
+                initialPage: JSON.parse(app.dataset.page),
+                resolveComponent: (name) => require(`./Pages/${name}`).default,
+            },
+        }),
+}).$mount(app);

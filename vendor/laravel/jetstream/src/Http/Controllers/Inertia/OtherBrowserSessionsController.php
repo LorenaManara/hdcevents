@@ -6,28 +6,24 @@ use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Laravel\Fortify\Actions\ConfirmPassword;
 
 class OtherBrowserSessionsController extends Controller
 {
     /**
-     * Log out from other browser sessions.
+     * Logout from other browser sessions.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Illuminate\Contracts\Auth\StatefulGuard  $guard
-     * @return \Illuminate\Http\RedirectResponse
+     * @return \Inertia\Response
      */
     public function destroy(Request $request, StatefulGuard $guard)
     {
-        $confirmed = app(ConfirmPassword::class)(
-            $guard, $request->user(), $request->password
-        );
-
-        if (! $confirmed) {
+        if (! Hash::check($request->password, $request->user()->password)) {
             throw ValidationException::withMessages([
-                'password' => __('The password is incorrect.'),
-            ]);
+                'password' => [__('This password does not match our records.')],
+            ])->errorBag('logoutOtherBrowserSessions');
         }
 
         $guard->logoutOtherDevices($request->password);
@@ -49,7 +45,7 @@ class OtherBrowserSessionsController extends Controller
             return;
         }
 
-        DB::connection(config('session.connection'))->table(config('session.table', 'sessions'))
+        DB::table(config('session.table', 'sessions'))
             ->where('user_id', $request->user()->getAuthIdentifier())
             ->where('id', '!=', $request->session()->getId())
             ->delete();

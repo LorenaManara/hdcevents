@@ -5,9 +5,8 @@ namespace Laravel\Jetstream\Http\Controllers\Inertia;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use Inertia\Inertia;
-use Laravel\Fortify\Actions\ConfirmPassword;
 use Laravel\Jetstream\Contracts\DeletesUsers;
 
 class CurrentUserController extends Controller
@@ -16,28 +15,21 @@ class CurrentUserController extends Controller
      * Delete the current user.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Contracts\Auth\StatefulGuard  $guard
-     * @return \Illuminate\Http\Response
+     * @param  \Illuminate\Contracts\Auth\StatefulGuard  $auth
+     * @return \Illuminate\Http\RedirectResponse
      */
-    public function destroy(Request $request, StatefulGuard $guard)
+    public function destroy(Request $request, StatefulGuard $auth)
     {
-        $confirmed = app(ConfirmPassword::class)(
-            $guard, $request->user(), $request->password
-        );
-
-        if (! $confirmed) {
+        if (! Hash::check($request->password, $request->user()->password)) {
             throw ValidationException::withMessages([
-                'password' => __('The password is incorrect.'),
-            ]);
+                'password' => [__('This password does not match our records.')],
+            ])->errorBag('deleteUser');
         }
 
         app(DeletesUsers::class)->delete($request->user()->fresh());
 
-        $guard->logout();
+        $auth->logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Inertia::location(url('/'));
+        return response('', 409)->header('X-Inertia-Location', url('/'));
     }
 }

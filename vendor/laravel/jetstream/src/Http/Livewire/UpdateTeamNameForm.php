@@ -32,7 +32,7 @@ class UpdateTeamNameForm extends Component
     {
         $this->team = $team;
 
-        $this->state = $team->withoutRelations()->toArray();
+        $this->state = ['name' => $team->name];
     }
 
     /**
@@ -49,7 +49,7 @@ class UpdateTeamNameForm extends Component
 
         $this->emit('saved');
 
-        $this->emit('refresh-navigation-menu');
+        $this->emit('refresh-navigation-dropdown');
     }
 
     /**
